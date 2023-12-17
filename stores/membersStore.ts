@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { UserType } from "@/stores/userStore";
 
 interface UserState {
   members: UserType[];

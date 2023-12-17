@@ -1,10 +1,5 @@
 import { create } from "zustand";
 
-export interface UserType {
-  id: string;
-  username: string;
-}
-
 interface UserState {
   user: User | null;
   setUser: (user: User) => void;

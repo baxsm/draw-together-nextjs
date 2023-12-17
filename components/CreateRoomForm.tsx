@@ -2,7 +2,7 @@
 
 import { CreateRoomType, createRoomSchema } from "@/lib/validations/createRoom";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   Form,
@@ -15,12 +15,25 @@ import {
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import CopyButton from "./CopyButton";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useUserStore } from "@/stores/userStore";
+import { useMembersStore } from "@/stores/membersStore";
+import { socket } from "@/lib/socket";
+import { Loader2 } from "lucide-react";
 
 interface CreateRoomFormProps {
   roomId: string;
 }
 
 const CreateRoomForm: FC<CreateRoomFormProps> = ({ roomId }) => {
+  const router = useRouter();
+
+  const setUser = useUserStore((state) => state.setUser);
+  const setMembers = useMembersStore((state) => state.setMembers);
+
+  const [isLoading, setIsLoading] = useState(false);
+
   const form = useForm<CreateRoomType>({
     resolver: zodResolver(createRoomSchema),
     defaultValues: {
@@ -28,7 +41,33 @@ const CreateRoomForm: FC<CreateRoomFormProps> = ({ roomId }) => {
     },
   });
 
-  const onSubmit = (values: CreateRoomType) => {};
+  const onSubmit = (values: CreateRoomType) => {
+    setIsLoading(true);
+    socket.emit("create-room", { roomId, username: values.username });
+  };
+
+  useEffect(() => {
+    socket.on("room-joined", ({ user, roomId, members }: RoomJoinedType) => {
+      setUser(user);
+      setMembers(members);
+      router.replace(`/${roomId}`);
+      toast.success(`Welcome ${user.username}`)
+    });
+
+    socket.on("room-not-found", ({ message }: { message: string }) => {
+      toast.error(`Failed to join room : ${message}`);
+    });
+
+    socket.on("invalid-data", ({ message }: { message: string }) => {
+      toast.error(`Failed to join room : ${message}`);
+    });
+
+    return () => {
+      socket.off("room-joined");
+      socket.off("room-not-found");
+      socket.off("invalid-data");
+    };
+  }, [router, setUser, setMembers]);
 
   return (
     <Form {...form}>
@@ -58,8 +97,12 @@ const CreateRoomForm: FC<CreateRoomFormProps> = ({ roomId }) => {
           </div>
         </FormItem>
 
-        <Button type="submit" className="mt-2 w-full">
-          Create a Room
+        <Button disabled={isLoading} type="submit" className="mt-2 w-full">
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <>Create a Room</>
+          )}
         </Button>
       </form>
     </Form>
