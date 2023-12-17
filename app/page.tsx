@@ -20,7 +20,7 @@ export default function Home() {
 
       {/* Create Room Form */}
       <div className="flex h-full w-full items-center justify-center">
-        <Card className="max-w-xl">
+        <Card className="max-w-2xl">
           <CardHeader>
             <CardTitle>Draw Together</CardTitle>
             <CardDescription>
