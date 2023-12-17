@@ -14,6 +14,7 @@ import {
 } from "./ui/form";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import CopyButton from "./CopyButton";
 
 interface CreateRoomFormProps {
   roomId: string;
@@ -51,9 +52,10 @@ const CreateRoomForm: FC<CreateRoomFormProps> = ({ roomId }) => {
 
         <FormItem>
           <FormLabel className="text-foreground">Room ID</FormLabel>
-          <FormControl>
-            <Input value={roomId} readOnly disabled />
-          </FormControl>
+          <div className="flex items-center border rounded-md">
+            <Input value={roomId} readOnly disabled className="border-none" />
+            <CopyButton value={roomId} />
+          </div>
         </FormItem>
 
         <Button type="submit" className="mt-2 w-full">

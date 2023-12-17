@@ -11,6 +11,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 
 export default function Home() {
+  const roomId = crypto.randomUUID();
+
   return (
     <div className="relative h-screen">
       {/* Toggle Theme | Home */}
@@ -30,7 +32,7 @@ export default function Home() {
           </CardHeader>
 
           <CardContent className="flex flex-col gap-4">
-            <CreateRoomForm />
+            <CreateRoomForm roomId={roomId} />
 
             <div className="flex items-center gap-4">
               <Separator className="flex-1" />
