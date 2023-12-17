@@ -25,3 +25,10 @@ interface DrawOptions extends DrawProps {
   strokeWidth: number[];
   dashGap: number[];
 }
+
+interface MessageType {
+  id: string;
+  content: string;
+  createdAt: string;
+  userId: string;
+}

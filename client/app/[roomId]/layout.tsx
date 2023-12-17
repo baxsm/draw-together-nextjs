@@ -1,5 +1,5 @@
 import CanvasOptions from "@/components/canvasOptions";
-import MessageBox from "@/components/messages";
+import ChatBox from "@/components/chat";
 import { FC, ReactNode } from "react";
 
 interface layoutProps {
@@ -11,7 +11,7 @@ const layout: FC<layoutProps> = ({ children }) => {
     <div className="h-screen w-screen relative">
       <main className="w-full h-full">{children}</main>
       <CanvasOptions />
-      <MessageBox />
+      <ChatBox />
     </div>
   );
 };

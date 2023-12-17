@@ -107,9 +107,24 @@ export const setClientReady = (socket: Socket, roomId: string) => {
     return;
   }
 
+  // greeting message
+  const message: MessageType = {
+    content: adminMember.username,
+    createdAt: new Date().toISOString(),
+    id: "user-joined",
+    userId: "",
+  };
+
+  // user join the chat
+  socket.to(adminMember.id).emit("chat-message-from-server", message);
+
+  // get canvas state of the admin / first member
   socket.to(adminMember.id).emit("get-canvas-state");
+  // get chat state of the admin / first member
+  socket.to(adminMember.id).emit("get-chat-state");
 };
 
+// canvas
 export const sendCanvasState = (
   socket: Socket,
   roomId: string,
@@ -144,4 +159,37 @@ export const deleteLastUndoPoint = (roomId: string) => {
   const room = undoPoints[roomId];
   if (!room) return;
   undoPoints[roomId].pop();
+};
+
+// messages
+export const sendChatState = (
+  socket: Socket,
+  roomId: string,
+  messages: MessageType[]
+) => {
+  const members = getRoomMembers(roomId);
+
+  const lastMember = members[members.length - 1];
+
+  if (!lastMember) {
+    return;
+  }
+
+  socket.to(lastMember.id).emit("chat-state-from-server", messages);
+};
+
+export const sendMessage = (
+  socket: Socket,
+  roomId: string,
+  message: MessageType
+) => {
+  const members = getRoomMembers(roomId);
+
+  const toMember = [...members].find((e) => e.id !== message.userId);
+
+  if (!toMember) {
+    return;
+  }
+
+  socket.to(toMember.id).emit("chat-message-from-server", message);
 };

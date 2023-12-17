@@ -1,6 +1,6 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { Input } from "../ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
 import { useForm } from "react-hook-form";
@@ -8,10 +8,20 @@ import { MessageSchemaType, messageSchema } from "@/lib/validations/message";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Send } from "lucide-react";
 import { Button } from "../ui/button";
+import { useChatStore } from "@/stores/chatStore";
+import { socket } from "@/lib/socket";
+import { useParams } from "next/navigation";
+import { useUserStore } from "@/stores/userStore";
 
 interface MessageInputProps {}
 
 const MessageInput: FC<MessageInputProps> = ({}) => {
+  const { roomId } = useParams();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { messages, addMessage } = useChatStore();
+  const user = useUserStore((state) => state.user);
+
   const form = useForm<MessageSchemaType>({
     resolver: zodResolver(messageSchema),
     defaultValues: {
@@ -19,9 +29,38 @@ const MessageInput: FC<MessageInputProps> = ({}) => {
     },
   });
 
+  const onSubmit = (values: MessageSchemaType) => {
+    if (!user) {
+      return;
+    }
+
+    setIsLoading(true);
+    const newMessage: MessageType = {
+      content: values.content,
+      createdAt: new Date().toISOString(),
+      id: crypto.randomUUID(),
+      userId: user.id,
+    };
+    socket.emit("send-chat-message", {
+      message: newMessage,
+      roomId,
+    });
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 600);
+  };
+
+  useEffect(() => {
+    socket.on("chat-message-from-server", (message: MessageType) => {
+      addMessage(message);
+    });
+  }, [messages, roomId, addMessage]);
+
+  console.log(messages);
+
   return (
     <Form {...form}>
-      <form className="w-full px-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full px-4">
         <FormField
           control={form.control}
           name="content"
@@ -29,7 +68,7 @@ const MessageInput: FC<MessageInputProps> = ({}) => {
             <FormItem>
               <FormLabel />
               <FormControl>
-                <div className="flex items-center gap-2 px-2 py-1 rounded-md border focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                <div className="flex items-center gap-2 px-2 py-1 rounded-md border ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
                   <Input
                     placeholder="say Hi!"
                     {...field}

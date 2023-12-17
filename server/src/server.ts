@@ -9,6 +9,8 @@ import {
   joinRoom,
   leaveRoom,
   sendCanvasState,
+  sendChatState,
+  sendMessage,
   setClientReady,
   validateJoinRoomData,
 } from "./helpers";
@@ -62,6 +64,22 @@ io.on("connection", (socket) => {
     setClientReady(socket, roomId);
   });
 
+  // messages
+  socket.on(
+    "send-chat-state",
+    ({ messages, roomId }: { messages: MessageType[]; roomId: string; }) => {
+      sendChatState(socket, roomId, messages)
+    }
+  );
+
+  socket.on(
+    "send-chat-message",
+    ({ message, roomId }: { message: MessageType; roomId: string }) => {
+      sendMessage(socket, roomId, message);
+    }
+  );
+
+  // canvas
   socket.on("send-canvas-state", ({ canvasState, roomId }) => {
     sendCanvasState(socket, roomId, canvasState);
   });
