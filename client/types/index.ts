@@ -4,12 +4,31 @@ interface UserType {
 }
 
 interface RoomJoinedType {
-  user: User;
+  user: UserType;
   roomId: string;
-  members: User[];
+  members: UserType[];
 }
 
 interface NotificationType {
   title: string;
   message: string;
+}
+
+type AppTouchEvent = TouchEvent;
+
+interface Point {
+  x: number;
+  y: number;
+}
+
+interface DrawProps {
+  ctx: CanvasRenderingContext2D;
+  currentPoint: Point;
+  prevPoint: Point | undefined;
+}
+
+interface DrawOptions extends DrawProps {
+  strokeColor: string;
+  strokeWidth: number[];
+  dashGap: number[];
 }

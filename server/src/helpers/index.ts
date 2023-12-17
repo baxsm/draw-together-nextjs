@@ -19,6 +19,8 @@ const joinRoomSchema = z.object({
 
 let users: User[] = [];
 
+let undoPoints: Record<string, string[]> = {};
+
 const getUser = (userId: string) => {
   return users.find((user) => user.id === userId);
 };
@@ -90,4 +92,56 @@ export const leaveRoom = (socket: Socket) => {
     message: `${username} left your room`,
   });
   socket.leave(roomId);
+};
+
+export const setClientReady = (socket: Socket, roomId: string) => {
+  const members = getRoomMembers(roomId);
+
+  if (members.length === 1) {
+    return socket.emit("client-loaded");
+  }
+
+  const adminMember = members[0];
+
+  if (!adminMember) {
+    return;
+  }
+
+  socket.to(adminMember.id).emit("get-canvas-state");
+};
+
+export const sendCanvasState = (
+  socket: Socket,
+  roomId: string,
+  canvasState: string
+) => {
+  const members = getRoomMembers(roomId);
+
+  const lastMember = members[members.length - 1];
+
+  if (!lastMember) {
+    return;
+  }
+
+  socket.to(lastMember.id).emit("canvas-state-from-server", canvasState);
+};
+
+export const addUndoPoint = (roomId: string, undoPoint: string) => {
+  const room = undoPoints[roomId];
+  if (room) {
+    return room.push(undoPoint);
+  }
+  undoPoints[roomId] = [undoPoint];
+};
+
+export const getLastUndoPoint = (roomId: string) => {
+  const roomUndoPoints = undoPoints[roomId];
+  if (!roomUndoPoints) return;
+  return roomUndoPoints[roomUndoPoints.length - 1];
+};
+
+export const deleteLastUndoPoint = (roomId: string) => {
+  const room = undoPoints[roomId];
+  if (!room) return;
+  undoPoints[roomId].pop();
 };

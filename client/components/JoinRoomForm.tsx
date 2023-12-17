@@ -15,7 +15,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "./ui/form";
 import { Input } from "./ui/input";
 import { socket } from "@/lib/socket";
-import { toast } from "sonner";
 
 const JoinRoomForm: FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -38,7 +37,6 @@ const JoinRoomForm: FC = () => {
 
   useEffect(() => {
     socket.on("room-not-found", () => {
-      toast.error("Room not found");
       setIsLoading(false);
     });
 

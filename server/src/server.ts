@@ -2,7 +2,16 @@ import express from "express";
 import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
-import { joinRoom, leaveRoom, validateJoinRoomData } from "./helpers";
+import {
+  addUndoPoint,
+  deleteLastUndoPoint,
+  getLastUndoPoint,
+  joinRoom,
+  leaveRoom,
+  sendCanvasState,
+  setClientReady,
+  validateJoinRoomData,
+} from "./helpers";
 
 const app = express();
 
@@ -49,6 +58,48 @@ io.on("connection", (socket) => {
     });
   });
 
+  socket.on("client-ready", (roomId: string) => {
+    setClientReady(socket, roomId);
+  });
+
+  socket.on("send-canvas-state", ({ canvasState, roomId }) => {
+    sendCanvasState(socket, roomId, canvasState);
+  });
+
+  socket.on(
+    "draw",
+    ({ drawOptions, roomId }: { drawOptions: DrawOptions; roomId: string }) => {
+      socket.to(roomId).emit("update-canvas-state", drawOptions);
+    }
+  );
+
+  socket.on("clear-canvas", (roomId: string) => {
+    socket.to(roomId).emit("clear-canvas");
+  });
+
+  socket.on(
+    "undo",
+    ({ canvasState, roomId }: { canvasState: string; roomId: string }) => {
+      socket.to(roomId).emit("undo-canvas", canvasState);
+    }
+  );
+
+  socket.on("get-last-undo-point", (roomId: string) => {
+    const lastUndoPoint = getLastUndoPoint(roomId);
+    socket.emit("last-undo-point-from-server", lastUndoPoint);
+  });
+
+  socket.on(
+    "add-undo-point",
+    ({ roomId, undoPoint }: { roomId: string; undoPoint: string }) => {
+      addUndoPoint(roomId, undoPoint);
+    }
+  );
+
+  socket.on("delete-last-undo-point", (roomId: string) => {
+    deleteLastUndoPoint(roomId);
+  });
+
   socket.on("leave-room", () => {
     leaveRoom(socket);
   });
@@ -62,5 +113,7 @@ io.on("connection", (socket) => {
 const PORT = process.env.PORT || 3001;
 
 server.listen(PORT, () => {
-  console.log(`Server started on port: ${PORT}`);
+  console.log(
+    `Frontend: http://localhost:3000 | Backend: http://localhost:3001`
+  );
 });
