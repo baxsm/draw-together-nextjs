@@ -29,7 +29,7 @@ const MessageInput: FC<MessageInputProps> = ({}) => {
             <FormItem>
               <FormLabel />
               <FormControl>
-                <div className="flex items-center gap-2 p-2 rounded-md border focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                <div className="flex items-center gap-2 px-2 py-1 rounded-md border focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <Input
                     placeholder="say Hi!"
                     {...field}
