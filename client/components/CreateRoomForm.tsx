@@ -51,7 +51,7 @@ const CreateRoomForm: FC<CreateRoomFormProps> = ({ roomId }) => {
       setUser(user);
       setMembers(members);
       router.replace(`/${roomId}`);
-      toast.success(`Welcome ${user.username}`)
+      toast.success(`Welcome ${user.username}`);
     });
 
     socket.on("room-not-found", ({ message }: { message: string }) => {

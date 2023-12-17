@@ -1,6 +1,6 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,8 +14,12 @@ import { JoinRoomType, joinRoomSchema } from "@/lib/validations/joinRoom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "./ui/form";
 import { Input } from "./ui/input";
+import { socket } from "@/lib/socket";
+import { toast } from "sonner";
 
 const JoinRoomForm: FC = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
   const form = useForm<JoinRoomType>({
     resolver: zodResolver(joinRoomSchema),
     defaultValues: {
@@ -24,7 +28,24 @@ const JoinRoomForm: FC = () => {
     },
   });
 
-  const onSubmit = (values: JoinRoomType) => {};
+  const onSubmit = (values: JoinRoomType) => {
+    setIsLoading(true);
+    socket.emit("join-room", {
+      roomId: values.roomId,
+      username: values.username,
+    });
+  };
+
+  useEffect(() => {
+    socket.on("room-not-found", () => {
+      toast.error("Room not found");
+      setIsLoading(false);
+    });
+
+    return () => {
+      socket.off("room-not-found");
+    };
+  }, []);
 
   return (
     <Dialog>
