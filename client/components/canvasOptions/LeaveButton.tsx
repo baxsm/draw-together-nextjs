@@ -3,18 +3,20 @@ import { useRouter } from "next/navigation";
 import { FC, useState } from "react";
 import { Button } from "../ui/button";
 import { socket } from "@/lib/socket";
+import { useChatStore } from "@/stores/chatStore";
 
 const LeaveButton: FC = () => {
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(false);
 
+  const { setMessages } = useChatStore();
+
   const handleLeave = () => {
     setIsLoading(true);
     socket.emit("leave-room");
-    setTimeout(() => {
-      router.replace("/");
-    }, 1200);
+    setMessages([]);
+    router.replace("/");
   };
 
   return (

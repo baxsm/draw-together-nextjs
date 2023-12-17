@@ -12,12 +12,14 @@ import { useChatStore } from "@/stores/chatStore";
 import { socket } from "@/lib/socket";
 import { useParams } from "next/navigation";
 import { useUserStore } from "@/stores/userStore";
+import { useMembersStore } from "@/stores/membersStore";
 
 interface MessageInputProps {}
 
 const MessageInput: FC<MessageInputProps> = ({}) => {
   const { roomId } = useParams();
   const [isLoading, setIsLoading] = useState(false);
+  const { members } = useMembersStore();
 
   const { messages, addMessage } = useChatStore();
   const user = useUserStore((state) => state.user);
@@ -35,28 +37,39 @@ const MessageInput: FC<MessageInputProps> = ({}) => {
     }
 
     setIsLoading(true);
+
     const newMessage: MessageType = {
       content: values.content,
       createdAt: new Date().toISOString(),
       id: crypto.randomUUID(),
       userId: user.id,
     };
+
     socket.emit("send-chat-message", {
       message: newMessage,
       roomId,
     });
+
+    addMessage(newMessage);
+
+    form.reset({
+      content: "",
+    });
+
     setTimeout(() => {
       setIsLoading(false);
-    }, 600);
+    }, 300);
   };
 
   useEffect(() => {
     socket.on("chat-message-from-server", (message: MessageType) => {
       addMessage(message);
     });
-  }, [messages, roomId, addMessage]);
 
-  console.log(messages);
+    return () => {
+      socket.off("chat-message-from-server");
+    };
+  }, [messages, roomId, addMessage]);
 
   return (
     <Form {...form}>
@@ -70,11 +83,24 @@ const MessageInput: FC<MessageInputProps> = ({}) => {
               <FormControl>
                 <div className="flex items-center gap-2 px-2 py-1 rounded-md border ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
                   <Input
+                    disabled={members.length === 1}
                     placeholder="say Hi!"
+                    autoFocus
+                    aria-autocomplete="none"
                     {...field}
                     className="border-none focus-visible:ring-0 ring-0 outline-none p-0 rounded-none"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        onSubmit(form.getValues());
+                      }
+                    }}
                   />
-                  <Button type="submit" size="sm">
+                  <Button
+                    disabled={members.length === 1}
+                    type="submit"
+                    size="sm"
+                  >
                     <Send className="w-4 h-4" />
                   </Button>
                 </div>

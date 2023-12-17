@@ -107,17 +107,6 @@ export const setClientReady = (socket: Socket, roomId: string) => {
     return;
   }
 
-  // greeting message
-  const message: MessageType = {
-    content: adminMember.username,
-    createdAt: new Date().toISOString(),
-    id: "user-joined",
-    userId: "",
-  };
-
-  // user join the chat
-  socket.to(adminMember.id).emit("chat-message-from-server", message);
-
   // get canvas state of the admin / first member
   socket.to(adminMember.id).emit("get-canvas-state");
   // get chat state of the admin / first member

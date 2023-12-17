@@ -12,6 +12,7 @@ import MessageInput from "./MessageInput";
 import { useChatStore } from "@/stores/chatStore";
 import { socket } from "@/lib/socket";
 import { useParams } from "next/navigation";
+import Members from "./Members";
 
 const ChatBox: FC = () => {
   const { roomId } = useParams();
@@ -43,6 +44,7 @@ const ChatBox: FC = () => {
         >
           <AccordionTrigger className="px-4">Messages</AccordionTrigger>
           <AccordionContent className="border-t">
+            <Members />
             <MessageFeed />
             <MessageInput />
           </AccordionContent>
