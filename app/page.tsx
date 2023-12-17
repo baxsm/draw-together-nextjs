@@ -1,5 +1,5 @@
 import CreateRoomForm from "@/components/CreateRoomForm";
-import JoinRoomButton from "@/components/JoinRoomButton";
+import JoinRoomForm from "@/components/JoinRoomForm";
 import ThemeToggleButton from "@/components/ThemeToggleButton";
 import {
   Card,
@@ -40,7 +40,7 @@ export default function Home() {
               <Separator className="flex-1" />
             </div>
 
-            <JoinRoomButton />
+            <JoinRoomForm />
           </CardContent>
         </Card>
       </div>
