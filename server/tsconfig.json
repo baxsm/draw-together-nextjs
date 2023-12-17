@@ -7,11 +7,8 @@
     "strict": true,
     "skipLibCheck": true,
     "noImplicitAny": true,
-    "outDir": "build",
+    "outDir": "./dist",
     "rootDir": "src",
-    "baseUrl": "./src",
-    "paths": {
-      "@/*": ["./*"]
-    }
+    "typeRoots": ["./src/types"]
   }
 }
