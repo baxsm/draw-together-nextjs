@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/server.js\"",
     "build": "npx tsc",
-    "state": "npm run build && node dist/server.js"
+    "start": "npm run build && node dist/server.js"
   },
   "keywords": [],
   "author": "baxsm",
