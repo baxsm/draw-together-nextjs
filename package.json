@@ -1,7 +1,7 @@
 {
   "name": "draw-together",
   "version": "1.0.0",
-  "description": "",
+  "description": "Draw Together: A collaborative platform for sharing moments of creativity and fun!",
   "main": "index.js",
   "scripts": {
     "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\""
