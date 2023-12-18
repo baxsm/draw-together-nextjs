@@ -1,27 +1,10 @@
 "use client";
 
-import { socket } from "@/lib/socket";
 import { useMembersStore } from "@/stores/membersStore";
-import { FC, useEffect } from "react";
-import { toast } from "sonner";
+import { FC } from "react";
 
 const Members: FC = () => {
-  const { members, setMembers } = useMembersStore();
-
-  useEffect(() => {
-    socket.on("update-members", (members) => {
-      setMembers(members);
-    });
-
-    socket.on("send-notification", ({ title, message }: NotificationType) => {
-      toast(message);
-    });
-
-    return () => {
-      socket.off("update-members");
-      socket.off("send-notification");
-    };
-  }, [setMembers]);
+  const { members } = useMembersStore();
 
   return (
     <div className="py-2 px-4 border-b flex flex-col gap-2">

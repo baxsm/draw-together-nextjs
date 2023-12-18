@@ -4,6 +4,9 @@ import { FC, useState } from "react";
 import { Button } from "../ui/button";
 import { socket } from "@/lib/socket";
 import { useChatStore } from "@/stores/chatStore";
+import { useCanvasStore } from "@/stores/canvasStore";
+import { useUserStore } from "@/stores/userStore";
+import { useMembersStore } from "@/stores/membersStore";
 
 const LeaveButton: FC = () => {
   const router = useRouter();
@@ -11,11 +14,22 @@ const LeaveButton: FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const { setMessages } = useChatStore();
+  const { setMembers } = useMembersStore();
+  const { setUser } = useUserStore();
+  const { setDashGap, setStrokeColor, setStrokeWidth } = useCanvasStore();
 
   const handleLeave = () => {
     setIsLoading(true);
+
     socket.emit("leave-room");
+
+    setUser(null);
+    setMembers([]);
     setMessages([]);
+    setStrokeColor("#000");
+    setStrokeWidth([3]);
+    setDashGap([0]);
+
     router.replace("/");
   };
 

@@ -9,20 +9,22 @@ interface ChatMessageProps {
 const ChatMessage: FC<ChatMessageProps> = ({ message }) => {
   const { user } = useUserStore();
 
-  console.log(message);
-
   return (
-    <div className={cn("flex", {
-      "justify-end": user?.id === message.userId,
-      "justify-start": user?.id !== message.userId,
-    })}>
+    <div
+      className={cn("flex", {
+        "justify-end": user?.id === message.userId,
+        "justify-start": user?.id !== message.userId,
+      })}
+    >
       <div
         className={cn("py-4 px-4 flex bg-accent rounded-lg w-fit", {
           "rounded-br-none": user?.id === message.userId,
           "rounded-bl-none": user?.id !== message.userId,
         })}
       >
-        <h5 className="text-xs text-foreground">{message.content}</h5>
+        <h5 className="text-xs text-foreground max-w-[180px] break-words">
+          {message.content}
+        </h5>
       </div>
     </div>
   );

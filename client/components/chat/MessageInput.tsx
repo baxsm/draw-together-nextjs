@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { Input } from "../ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
 import { useForm } from "react-hook-form";
@@ -13,10 +13,9 @@ import { socket } from "@/lib/socket";
 import { useParams } from "next/navigation";
 import { useUserStore } from "@/stores/userStore";
 import { useMembersStore } from "@/stores/membersStore";
+import { cn } from "@/lib/utils";
 
-interface MessageInputProps {}
-
-const MessageInput: FC<MessageInputProps> = ({}) => {
+const MessageInput: FC = () => {
   const { roomId } = useParams();
   const [isLoading, setIsLoading] = useState(false);
   const { members } = useMembersStore();
@@ -61,19 +60,14 @@ const MessageInput: FC<MessageInputProps> = ({}) => {
     }, 300);
   };
 
-  useEffect(() => {
-    socket.on("chat-message-from-server", (message: MessageType) => {
-      addMessage(message);
-    });
-
-    return () => {
-      socket.off("chat-message-from-server");
-    };
-  }, [messages, roomId, addMessage]);
-
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full px-4">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className={cn("w-full px-4", {
+          "opacity-0": members.length === 1,
+        })}
+      >
         <FormField
           control={form.control}
           name="content"
