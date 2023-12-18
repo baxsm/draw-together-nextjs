@@ -132,6 +132,6 @@ const PORT = process.env.PORT || 3001;
 
 server.listen(PORT, () => {
   console.log(
-    `Frontend: http://localhost:3000 | Backend: http://localhost:3001`
+    `Frontend: http://localhost:3000 | Backend: http://localhost:${PORT}`
   );
 });

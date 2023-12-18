@@ -4,6 +4,8 @@
   "description": "Draw Together: A collaborative platform for sharing moments of creativity and fun!",
   "main": "index.js",
   "scripts": {
+    "install-client": "cd client && npm i",
+    "install-server": "cd server && npm i",
     "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\""
   },
   "devDependencies": {
