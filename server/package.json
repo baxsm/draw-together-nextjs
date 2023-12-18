@@ -2,7 +2,7 @@
   "name": "draw-together-server",
   "version": "1.0.0",
   "description": "Draw Together: A collaborative platform for sharing moments of creativity and fun!",
-  "main": "./src/server.ts",
+  "main": "./dist/server.js",
   "scripts": {
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/server.js\"",
     "build": "npx tsc"
