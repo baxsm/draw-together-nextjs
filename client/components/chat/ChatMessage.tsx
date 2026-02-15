@@ -1,31 +1,45 @@
-import { cn } from "@/lib/utils";
+import type { FC } from "react";
+import { cn, formatRelativeTime } from "@/lib/utils";
 import { useUserStore } from "@/stores/userStore";
-import { FC } from "react";
 
 interface ChatMessageProps {
   message: MessageType;
+  showSender: boolean;
 }
 
-const ChatMessage: FC<ChatMessageProps> = ({ message }) => {
+const ChatMessage: FC<ChatMessageProps> = ({ message, showSender }) => {
   const { user } = useUserStore();
+  const isOwn = user?.id === message.userId;
 
   return (
     <div
-      className={cn("flex", {
-        "justify-end": user?.id === message.userId,
-        "justify-start": user?.id !== message.userId,
+      className={cn("flex flex-col", {
+        "items-end": isOwn,
+        "items-start": !isOwn,
+        "mt-2": showSender,
+        "mt-0.5": !showSender,
       })}
     >
+      {showSender && !isOwn && (
+        <span className="mb-0.5 ml-1 text-[10px] text-muted-foreground">
+          {message.username}
+        </span>
+      )}
       <div
-        className={cn("py-4 px-4 flex bg-accent rounded-lg w-fit", {
-          "rounded-br-none": user?.id === message.userId,
-          "rounded-bl-none": user?.id !== message.userId,
-        })}
+        className={cn(
+          "max-w-50 rounded-lg px-3 py-2",
+          isOwn
+            ? "rounded-br-none bg-primary text-primary-foreground"
+            : "rounded-bl-none bg-muted text-foreground",
+        )}
       >
-        <h5 className="text-xs text-foreground max-w-[180px] break-words">
+        <p className="wrap-break-word text-xs leading-relaxed">
           {message.content}
-        </h5>
+        </p>
       </div>
+      <span className="mt-0.5 px-1 text-[9px] text-muted-foreground/60">
+        {formatRelativeTime(message.createdAt)}
+      </span>
     </div>
   );
 };

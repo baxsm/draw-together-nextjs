@@ -1,12 +1,12 @@
-import { DoorOpen, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { FC, useState } from "react";
-import { Button } from "../ui/button";
+import { type FC, useState } from "react";
 import { socket } from "@/lib/socket";
-import { useChatStore } from "@/stores/chatStore";
 import { useCanvasStore } from "@/stores/canvasStore";
-import { useUserStore } from "@/stores/userStore";
+import { useChatStore } from "@/stores/chatStore";
 import { useMembersStore } from "@/stores/membersStore";
+import { useUserStore } from "@/stores/userStore";
+import { Button } from "../ui/button";
 
 const LeaveButton: FC = () => {
   const router = useRouter();
@@ -16,7 +16,14 @@ const LeaveButton: FC = () => {
   const { setMessages } = useChatStore();
   const { setMembers } = useMembersStore();
   const { setUser } = useUserStore();
-  const { setDashGap, setStrokeColor, setStrokeWidth } = useCanvasStore();
+  const {
+    setDashGap,
+    setStrokeColor,
+    setStrokeWidth,
+    setTool,
+    setFontSize,
+    setIsLocked,
+  } = useCanvasStore();
 
   const handleLeave = () => {
     setIsLoading(true);
@@ -29,18 +36,27 @@ const LeaveButton: FC = () => {
     setStrokeColor("#000");
     setStrokeWidth([3]);
     setDashGap([0]);
+    setTool("pen");
+    setFontSize([16]);
+    setIsLocked(false);
 
     router.replace("/");
   };
 
   return (
-    <Button disabled={isLoading} variant="destructive" onClick={handleLeave}>
+    <Button
+      disabled={isLoading}
+      variant="destructive"
+      size="sm"
+      onClick={handleLeave}
+      className="cursor-pointer"
+    >
       {isLoading ? (
-        <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
       ) : (
-        <DoorOpen className="w-4 h-4 mr-1.5" />
+        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
       )}
-      Leave Room
+      Leave
     </Button>
   );
 };

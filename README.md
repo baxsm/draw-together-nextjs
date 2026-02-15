@@ -29,7 +29,7 @@ Explore the live demo of Draw Together at [here](https://draw-together-nextjs.ve
 
 - **Collaborative Drawing:** Engage in real-time collaborative drawing sessions with friends and family.
 - **Rich Color Options:** Explore an expanded palette of colors to bring your creations to life.
-- **Interactive Chat Box:** Seamlessly communicate with other users through a feature-rich chat box.
+- **Interactive Chat Box:** Seamlessly communicate with other users through a feature-rich chat box with sender names, timestamps, message grouping, system messages, and unread indicators.
 - **Download Canvas:** Save your masterpieces by downloading the canvas.
 - **Theme Customization:** Personalize your experience with theme customization options.
 - **Sleek UI Design:** Elevate the user interface with stylish components from the shadcn-ui library.
@@ -72,15 +72,7 @@ Certainly! You can modify the instructions as follows:
 
 ## Future Work 🚀
 
-Explore exciting possibilities for future enhancements and features! 🌈
-
-- [ ] **User Cursors:** Introduce individual cursors for each user, providing a visual representation of their actions on the canvas.
-- [ ] **Message Sender Names:** Display user names along with messages in the chat box for clearer communication.
-- [ ] **Emoji Support:** Enhance expression by incorporating emoji support in the chat.
-- [ ] **Collaborative Tools:** Introduce additional collaborative drawing tools for more creative possibilities.
-- [ ] **User Avatars:** Add user avatars to make the chat experience more personalized.
-- [ ] **Accessibility Features:** Ensure the application is accessible to users with different abilities.
-- [ ] **Mobile Responsiveness:** Optimize the platform for a seamless experience on mobile devices.
+See [TODO.md](TODO.md) for planned enhancements and features.
 
 ## Contributing
 

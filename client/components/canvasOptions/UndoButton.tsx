@@ -1,18 +1,18 @@
 "use client";
 
-import { FC, useCallback, useEffect, useState } from "react";
-import { Button } from "../ui/button";
 import { RotateCcw } from "lucide-react";
-import { cn, drawWithDataURL } from "@/lib/utils";
-import { useCanvasStore } from "@/stores/canvasStore";
-import { socket } from "@/lib/socket";
 import { useParams } from "next/navigation";
+import { type FC, useCallback, useEffect, useState } from "react";
+import { socket } from "@/lib/socket";
+import { drawWithDataURL } from "@/lib/utils";
+import { useCanvasStore } from "@/stores/canvasStore";
+import { Button } from "../ui/button";
 
 const UndoButton: FC = () => {
   const { roomId } = useParams();
   const canvasRef = useCanvasStore((state) => state.canvasRef);
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
 
   const undo = useCallback(
     (undoPoint: string) => {
@@ -24,7 +24,7 @@ const UndoButton: FC = () => {
 
       drawWithDataURL(undoPoint, ctx, canvasElement);
     },
-    [canvasRef]
+    [canvasRef],
   );
 
   const undoCanvas = () => {
@@ -50,8 +50,13 @@ const UndoButton: FC = () => {
   }, [roomId, undo]);
 
   return (
-    <Button onClick={undoCanvas} variant="outline" className="flex-1">
-      <RotateCcw className={cn("w-5 h-5 mr-1.5 duration-300")} />
+    <Button
+      onClick={undoCanvas}
+      variant="outline"
+      size="sm"
+      className="flex-1 cursor-pointer"
+    >
+      <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
       Undo
     </Button>
   );

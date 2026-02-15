@@ -1,5 +1,6 @@
+import { Download } from "lucide-react";
+import type { FC } from "react";
 import { useCanvasStore } from "@/stores/canvasStore";
-import { FC } from "react";
 import { Button } from "../ui/button";
 
 const SaveCanvasButton: FC = () => {
@@ -17,7 +18,17 @@ const SaveCanvasButton: FC = () => {
     link.remove();
   };
 
-  return <Button onClick={saveCanvas}>Save Canvas</Button>;
+  return (
+    <Button
+      onClick={saveCanvas}
+      variant="secondary"
+      size="sm"
+      className="w-full cursor-pointer"
+    >
+      <Download className="mr-1.5 h-3.5 w-3.5" />
+      Save Canvas
+    </Button>
+  );
 };
 
 export default SaveCanvasButton;

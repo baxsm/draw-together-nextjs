@@ -1,19 +1,15 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { getCursorColor } from "./cursorColors";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function draw({
-  ctx,
-  currentPoint,
-  prevPoint,
-  strokeColor,
-  strokeWidth,
-  dashGap,
-}: DrawOptions) {
-  const startPoint = prevPoint ?? currentPoint;
+function drawFreehand(options: DrawOptions) {
+  const { ctx, currentPoint, prevPoint, strokeColor, strokeWidth, dashGap } =
+    options;
+  const start = prevPoint ?? currentPoint;
 
   ctx.strokeStyle = strokeColor;
   ctx.lineWidth = strokeWidth[0];
@@ -21,20 +17,129 @@ export function draw({
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
 
-  // Start a new path
   ctx.beginPath();
-  // Place the cursor from the point the line should be started
-  ctx.moveTo(startPoint.x, startPoint.y);
-  // Draw a line from current cursor position to the provided x,y coordinate
+  ctx.moveTo(start.x, start.y);
   ctx.lineTo(currentPoint.x, currentPoint.y);
-  // Add stroke to the given path (render the line)
   ctx.stroke();
+}
+
+function drawEraser(options: DrawOptions) {
+  const { ctx } = options;
+  ctx.save();
+  ctx.globalCompositeOperation = "destination-out";
+  drawFreehand(options);
+  ctx.restore();
+}
+
+function drawRectangle(options: DrawOptions) {
+  const { ctx, startPoint, endPoint, strokeColor, strokeWidth, dashGap } =
+    options;
+  if (!startPoint || !endPoint) return;
+
+  ctx.strokeStyle = strokeColor;
+  ctx.lineWidth = strokeWidth[0];
+  ctx.setLineDash(dashGap);
+  ctx.lineJoin = "miter";
+  ctx.lineCap = "square";
+
+  ctx.beginPath();
+  ctx.rect(
+    startPoint.x,
+    startPoint.y,
+    endPoint.x - startPoint.x,
+    endPoint.y - startPoint.y,
+  );
+  ctx.stroke();
+}
+
+function drawCircle(options: DrawOptions) {
+  const { ctx, startPoint, endPoint, strokeColor, strokeWidth, dashGap } =
+    options;
+  if (!startPoint || !endPoint) return;
+
+  ctx.strokeStyle = strokeColor;
+  ctx.lineWidth = strokeWidth[0];
+  ctx.setLineDash(dashGap);
+
+  const rx = (endPoint.x - startPoint.x) / 2;
+  const ry = (endPoint.y - startPoint.y) / 2;
+  const cx = startPoint.x + rx;
+  const cy = startPoint.y + ry;
+
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, Math.abs(rx), Math.abs(ry), 0, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+function drawLine(options: DrawOptions) {
+  const { ctx, startPoint, endPoint, strokeColor, strokeWidth, dashGap } =
+    options;
+  if (!startPoint || !endPoint) return;
+
+  ctx.strokeStyle = strokeColor;
+  ctx.lineWidth = strokeWidth[0];
+  ctx.setLineDash(dashGap);
+  ctx.lineCap = "round";
+
+  ctx.beginPath();
+  ctx.moveTo(startPoint.x, startPoint.y);
+  ctx.lineTo(endPoint.x, endPoint.y);
+  ctx.stroke();
+}
+
+function drawText(options: DrawOptions) {
+  const { ctx, currentPoint, strokeColor, text, fontSize } = options;
+  if (!text) return;
+
+  const size = fontSize ?? 16;
+  ctx.font = `${size}px sans-serif`;
+  ctx.fillStyle = strokeColor;
+  ctx.textBaseline = "top";
+  ctx.fillText(text, currentPoint.x, currentPoint.y);
+}
+
+export function draw(options: DrawOptions) {
+  const { ctx, userId } = options;
+
+  if (userId) {
+    ctx.shadowColor = getCursorColor(userId);
+    ctx.shadowBlur = 4;
+  }
+
+  switch (options.tool) {
+    case "eraser":
+      drawEraser(options);
+      break;
+    case "rectangle":
+      drawRectangle(options);
+      break;
+    case "circle":
+      drawCircle(options);
+      break;
+    case "line":
+      drawLine(options);
+      break;
+    case "text":
+      drawText(options);
+      break;
+    case "laser":
+      drawFreehand(options);
+      break;
+    default:
+      drawFreehand(options);
+      break;
+  }
+
+  if (userId) {
+    ctx.shadowColor = "transparent";
+    ctx.shadowBlur = 0;
+  }
 }
 
 export function drawWithDataURL(
   dataURL: string,
   ctx: CanvasRenderingContext2D,
-  canvasElement: HTMLCanvasElement
+  canvasElement: HTMLCanvasElement,
 ) {
   const img = new Image();
   img.src = dataURL;
@@ -47,4 +152,24 @@ export function drawWithDataURL(
 export function isMacOS() {
   if (typeof navigator === "undefined") return false;
   return navigator.userAgent?.includes("Mac");
+}
+
+export function formatRelativeTime(isoString: string): string {
+  const now = Date.now();
+  const then = new Date(isoString).getTime();
+  const diffSeconds = Math.floor((now - then) / 1000);
+
+  if (diffSeconds < 5) return "just now";
+  if (diffSeconds < 60) return `${diffSeconds}s ago`;
+
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+
+  return new Date(isoString).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
 }

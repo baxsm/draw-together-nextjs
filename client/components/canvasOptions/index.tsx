@@ -1,24 +1,29 @@
 "use client";
 
-import { FC, useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import ColorPicker from "./ColorPicker";
-import StrokeSliders from "./StrokeSliders";
-import { Separator } from "../ui/separator";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { type FC, useEffect, useState } from "react";
 import { socket } from "@/lib/socket";
-import { ChevronsLeft, Cog, DoorOpen, X } from "lucide-react";
+import { useCanvasStore } from "@/stores/canvasStore";
+import { useUserStore } from "@/stores/userStore";
 import { Button } from "../ui/button";
-import { cn } from "@/lib/utils";
-import ThemeToggleButton from "../ThemeToggleButton";
-import LeaveButton from "./LeaveButton";
+import { Separator } from "../ui/separator";
+import AdminControls from "./AdminControls";
 import ClearButton from "./ClearButton";
-import UndoButton from "./UndoButton";
+import InviteLinkButton from "./InviteLinkButton";
+import ColorPicker from "./ColorPicker";
+import LeaveButton from "./LeaveButton";
 import SaveCanvasButton from "./SaveCanvasButton";
+import StrokeSliders from "./StrokeSliders";
+import ToolSelector from "./ToolSelector";
+import UndoButton from "./UndoButton";
 
 const CanvasOptions: FC = () => {
   const [isLoading, setIsLoading] = useState(false);
-
-  const [isVisible, setIsVisible] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(true);
+  const isLocked = useCanvasStore((state) => state.isLocked);
+  const role = useUserStore((state) => state.role);
+  const toolsDisabled = isLocked && role !== "admin";
 
   useEffect(() => {
     socket.on("client-loaded", () => {
@@ -31,54 +36,64 @@ const CanvasOptions: FC = () => {
   });
 
   if (isLoading) {
-    return <></>;
+    return null;
   }
 
   return (
-    <div className="absolute left-4 top-4 z-20 h-fit">
-      <div className="flex items-center gap-4 mb-4">
+    <div className="absolute top-4 left-4 z-20 w-60 overflow-hidden rounded-xl border border-border/60 bg-background/80 shadow-lg backdrop-blur-xl">
+      <div className="flex items-center justify-between px-3 py-2">
         <LeaveButton />
         <Button
-          onClick={() => setIsVisible((prev) => !prev)}
-          className={cn("bg-background hover:bg-background/90")}
+          onClick={() => setIsExpanded((prev) => !prev)}
           size="icon"
-          variant="outline"
-        >
-          <Cog className="w-5 h-5 text-foreground" />
-        </Button>
-        <ThemeToggleButton />
-      </div>
-      <Card
-        className={cn("transition-all relative duration-300 w-full h-full", {
-          "scale-0 h-0": !isVisible,
-        })}
-      >
-        <Button
-          onClick={() => setIsVisible((prev) => !prev)}
           variant="ghost"
-          size="icon"
-          className="absolute right-2 top-2"
+          className="h-7 w-7 cursor-pointer"
+          aria-label="Toggle tools panel"
         >
-          <X className="w-5 h-5" />
+          {isExpanded ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
         </Button>
-        <CardHeader>
-          <CardTitle className="text-xl w-fit">Customize</CardTitle>
-        </CardHeader>
-        <CardContent className="max-w-xs">
-          <div className="flex flex-col gap-4">
-            <ColorPicker />
+      </div>
+
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
             <Separator />
-            <StrokeSliders />
-            <Separator />
-            <div className="flex items-center gap-2">
-              <ClearButton />
-              <UndoButton />
+            <div className="flex flex-col gap-4 p-4">
+              <div className={toolsDisabled ? "pointer-events-none opacity-40" : ""}>
+                <ToolSelector />
+              </div>
+              <Separator />
+              <div className={toolsDisabled ? "pointer-events-none opacity-40" : ""}>
+                <ColorPicker />
+              </div>
+              <Separator />
+              <div className={toolsDisabled ? "pointer-events-none opacity-40" : ""}>
+                <StrokeSliders />
+              </div>
+              <Separator />
+              <div className={toolsDisabled ? "pointer-events-none opacity-40" : ""}>
+                <div className="flex items-center gap-2">
+                  <ClearButton />
+                  <UndoButton />
+                </div>
+              </div>
+              <Separator />
+              <SaveCanvasButton />
+              <InviteLinkButton />
+              <AdminControls />
             </div>
-            <Separator />
-            <SaveCanvasButton />
-          </div>
-        </CardContent>
-      </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

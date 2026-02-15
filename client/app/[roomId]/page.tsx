@@ -1,20 +1,21 @@
+import { notFound } from "next/navigation";
 import DrawingCanvas from "@/components/DrawingCanvas";
 import { isValidUUID } from "@/lib/validations/joinRoom";
-import { notFound } from "next/navigation";
-import { FC } from "react";
 
 interface pageProps {
-  params: {
+  params: Promise<{
     roomId: string;
-  };
+  }>;
 }
 
-const page: FC<pageProps> = ({ params }) => {
-  if (!params.roomId && !isValidUUID(params.roomId)) {
+const page = async ({ params }: pageProps) => {
+  const { roomId } = await params;
+
+  if (!roomId || !isValidUUID(roomId)) {
     notFound();
   }
 
-  return <DrawingCanvas roomId={params.roomId} />;
+  return <DrawingCanvas roomId={roomId} />;
 };
 
 export default page;

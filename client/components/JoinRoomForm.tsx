@@ -1,29 +1,41 @@
 "use client";
 
-import { FC, useEffect, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { LogIn } from "lucide-react";
+import { type FC, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { socket } from "@/lib/socket";
+import { type JoinRoomType, joinRoomSchema } from "@/lib/validations/joinRoom";
+import { Button } from "./ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { Button } from "./ui/button";
-import { useForm } from "react-hook-form";
-import { JoinRoomType, joinRoomSchema } from "@/lib/validations/joinRoom";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "./ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "./ui/form";
 import { Input } from "./ui/input";
-import { socket } from "@/lib/socket";
 
 const JoinRoomForm: FC = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
+  const [needsPassword, setNeedsPassword] = useState(false);
 
   const form = useForm<JoinRoomType>({
     resolver: zodResolver(joinRoomSchema),
     defaultValues: {
       roomId: "",
       username: "",
+      password: "",
     },
   });
 
@@ -32,6 +44,7 @@ const JoinRoomForm: FC = () => {
     socket.emit("join-room", {
       roomId: values.roomId,
       username: values.username,
+      password: values.password || undefined,
     });
   };
 
@@ -40,15 +53,28 @@ const JoinRoomForm: FC = () => {
       setIsLoading(false);
     });
 
+    socket.on("password-required", () => {
+      setNeedsPassword(true);
+      setIsLoading(false);
+    });
+
+    socket.on("invalid-password", ({ message }: { message: string }) => {
+      toast.error(message);
+      setIsLoading(false);
+    });
+
     return () => {
       socket.off("room-not-found");
+      socket.off("password-required");
+      socket.off("invalid-password");
     };
   }, []);
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full">
+        <Button variant="outline" className="w-full cursor-pointer">
+          <LogIn className="mr-2 h-4 w-4" />
           Join a Room
         </Button>
       </DialogTrigger>
@@ -56,20 +82,30 @@ const JoinRoomForm: FC = () => {
       <DialogContent className="sm:max-w-sm">
         <DialogHeader className="pb-2">
           <DialogTitle>Join a Room</DialogTitle>
+          <DialogDescription>
+            Enter the room ID and your username to join.
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-3"
           >
             <FormField
               control={form.control}
               name="username"
               render={({ field }) => (
                 <FormItem>
+                  <FormLabel className="font-medium text-xs">
+                    Username
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="j0hnd0e" {...field} />
+                    <Input
+                      placeholder="Enter your name"
+                      className="h-9"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage className="text-xs" />
                 </FormItem>
@@ -80,15 +116,44 @@ const JoinRoomForm: FC = () => {
               name="roomId"
               render={({ field }) => (
                 <FormItem>
+                  <FormLabel className="font-medium text-xs">Room ID</FormLabel>
                   <FormControl>
-                    <Input placeholder="Room ID" {...field} />
+                    <Input
+                      placeholder="Paste room ID here"
+                      className="h-9 font-mono text-xs"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
 
-            <Button type="submit" className="mt-2">
+            {needsPassword && (
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-medium text-xs">
+                      Password
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Enter room password"
+                        className="h-9"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            <Button type="submit" className="mt-1 cursor-pointer">
+              <LogIn className="mr-2 h-4 w-4" />
               Join Room
             </Button>
           </form>

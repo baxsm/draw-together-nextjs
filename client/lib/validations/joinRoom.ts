@@ -14,6 +14,7 @@ export const joinRoomSchema = z.object({
   roomId: z.string().refine((value) => isValidUUID(value), {
     message: "Invalid roomId",
   }),
+  password: z.string().max(50).optional(),
 });
 
 export type JoinRoomType = z.infer<typeof joinRoomSchema>;

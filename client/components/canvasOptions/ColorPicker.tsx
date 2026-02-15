@@ -1,22 +1,19 @@
 "use client";
 
-import { useCanvasStore } from "@/stores/canvasStore";
-import { FC } from "react";
+import type { FC } from "react";
 import {
-  IColor,
+  type IColor,
   ColorPicker as ReactColorPicker,
   useColor,
 } from "react-color-palette";
+import { useCanvasStore } from "@/stores/canvasStore";
 import "react-color-palette/css";
 
-interface ColorPickerProps {}
+type ColorPickerProps = {};
 
 const ColorPicker: FC<ColorPickerProps> = ({}) => {
   const [color, setColor] = useColor("#000");
-  const [_, setStrokeColor] = useCanvasStore((state) => [
-    state.strokeColor,
-    state.setStrokeColor,
-  ]);
+  const setStrokeColor = useCanvasStore((state) => state.setStrokeColor);
 
   const handleChange = (color: IColor) => {
     setColor(color);

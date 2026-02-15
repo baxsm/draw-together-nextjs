@@ -1,4 +1,4 @@
-import { type Socket } from "socket.io";
+import type { Server, Socket } from "socket.io";
 import * as z from "zod";
 
 const isValidUUID = (value: string) => {
@@ -15,13 +15,30 @@ const joinRoomSchema = z.object({
   roomId: z.string().refine((value) => isValidUUID(value), {
     message: "Invalid roomId",
   }),
+  password: z.string().max(50).optional(),
 });
 
 let users: User[] = [];
 
-let undoPoints: Record<string, string[]> = {};
+const undoPoints: Record<string, string[]> = {};
 
-const getUser = (userId: string) => {
+const roomSettings: Record<string, { canvasLocked: boolean }> = {};
+
+const roomPasswords: Record<string, string> = {};
+
+export const setRoomPassword = (roomId: string, password: string) => {
+  roomPasswords[roomId] = password;
+};
+
+export const getRoomPassword = (roomId: string) => {
+  return roomPasswords[roomId];
+};
+
+const clearRoomPassword = (roomId: string) => {
+  delete roomPasswords[roomId];
+};
+
+export const getUser = (userId: string) => {
   return users.find((user) => user.id === userId);
 };
 
@@ -33,15 +50,27 @@ const removeUser = (userId: string) => {
   users = users.filter((user) => user.id !== userId);
 };
 
-const getRoomMembers = (roomId: string) => {
+export const getRoomMembers = (roomId: string) => {
   return users
     .filter((user) => user.roomId === roomId)
-    .map(({ id, username }) => ({ id, username }));
+    .map(({ id, username, role }) => ({ id, username, role }));
+};
+
+export const isAdmin = (userId: string): boolean => {
+  const user = getUser(userId);
+  return user?.role === "admin";
+};
+
+export const getRoomSettings = (roomId: string) => {
+  if (!roomSettings[roomId]) {
+    roomSettings[roomId] = { canvasLocked: false };
+  }
+  return roomSettings[roomId];
 };
 
 export const validateJoinRoomData = (
   socket: Socket,
-  joinRoomData: JoinRoomType
+  joinRoomData: JoinRoomType,
 ) => {
   try {
     return joinRoomSchema.parse(joinRoomData);
@@ -57,40 +86,85 @@ export const validateJoinRoomData = (
 export const joinRoom = (socket: Socket, roomId: string, username: string) => {
   socket.join(roomId);
 
-  const user = {
-    id: socket.id,
-    username,
-  };
+  const existingMembers = getRoomMembers(roomId);
+  const role: UserRole = existingMembers.length === 0 ? "admin" : "member";
 
-  addUser({ ...user, roomId });
+  const user = { id: socket.id, username };
+
+  addUser({ ...user, roomId, role });
 
   const members = getRoomMembers(roomId);
 
-  socket.emit("room-joined", { user, roomId, members });
+  socket.emit("room-joined", { user: { ...user, role }, roomId, members });
   socket.to(roomId).emit("update-members", members);
   socket.to(roomId).emit("send-notification", {
     title: "New member joined",
     message: `${username} joined the room!`,
   });
+
+  const systemMessage: SystemMessageType = {
+    id: crypto.randomUUID(),
+    type: "system",
+    content: `${username} joined the room`,
+    createdAt: new Date().toISOString(),
+  };
+  socket.to(roomId).emit("system-message-from-server", systemMessage);
 };
 
-export const leaveRoom = (socket: Socket) => {
+export const leaveRoom = (io: Server, socket: Socket) => {
   const user = getUser(socket.id);
   if (!user) {
     return;
   }
 
-  const { username, roomId } = user;
+  const { username, roomId, role } = user;
 
   removeUser(socket.id);
 
   const members = getRoomMembers(roomId);
 
-  socket.to(roomId).emit("update-members", members);
+  if (members.length === 0) {
+    delete roomSettings[roomId];
+    delete undoPoints[roomId];
+    clearRoomPassword(roomId);
+  }
+
+  if (role === "admin" && members.length > 0) {
+    const newAdmin = users.find(
+      (u) => u.id === members[0].id && u.roomId === roomId,
+    );
+    if (newAdmin) {
+      newAdmin.role = "admin";
+      const updatedMembers = getRoomMembers(roomId);
+      io.to(roomId).emit("update-members", updatedMembers);
+      io.to(newAdmin.id).emit("role-changed", { role: "admin" });
+
+      const promotionMsg: SystemMessageType = {
+        id: crypto.randomUUID(),
+        type: "system",
+        content: `${newAdmin.username} is now the admin`,
+        createdAt: new Date().toISOString(),
+      };
+      io.to(roomId).emit("system-message-from-server", promotionMsg);
+    }
+  } else {
+    socket.to(roomId).emit("update-members", members);
+  }
+
   socket.to(roomId).emit("send-notification", {
     title: "Member departure",
     message: `${username} left your room`,
   });
+
+  const systemMessage: SystemMessageType = {
+    id: crypto.randomUUID(),
+    type: "system",
+    content: `${username} left the room`,
+    createdAt: new Date().toISOString(),
+  };
+  socket.to(roomId).emit("system-message-from-server", systemMessage);
+
+  socket.to(roomId).emit("cursor-leave", socket.id);
   socket.leave(roomId);
 };
 
@@ -107,17 +181,14 @@ export const setClientReady = (socket: Socket, roomId: string) => {
     return;
   }
 
-  // get canvas state of the admin / first member
   socket.to(adminMember.id).emit("get-canvas-state");
-  // get chat state of the admin / first member
   socket.to(adminMember.id).emit("get-chat-state");
 };
 
-// canvas
 export const sendCanvasState = (
   socket: Socket,
   roomId: string,
-  canvasState: string
+  canvasState: string,
 ) => {
   const members = getRoomMembers(roomId);
 
@@ -150,11 +221,10 @@ export const deleteLastUndoPoint = (roomId: string) => {
   undoPoints[roomId].pop();
 };
 
-// messages
 export const sendChatState = (
   socket: Socket,
   roomId: string,
-  messages: MessageType[]
+  messages: ChatMessageType[],
 ) => {
   const members = getRoomMembers(roomId);
 
@@ -170,15 +240,14 @@ export const sendChatState = (
 export const sendMessage = (
   socket: Socket,
   roomId: string,
-  message: MessageType
+  message: MessageType,
 ) => {
-  const members = getRoomMembers(roomId);
+  socket.to(roomId).emit("chat-message-from-server", message);
+};
 
-  const toMember = [...members].find((e) => e.id !== message.userId);
-
-  if (!toMember) {
-    return;
-  }
-
-  socket.to(toMember.id).emit("chat-message-from-server", message);
+export const _resetForTesting = () => {
+  users = [];
+  for (const key of Object.keys(undoPoints)) delete undoPoints[key];
+  for (const key of Object.keys(roomSettings)) delete roomSettings[key];
+  for (const key of Object.keys(roomPasswords)) delete roomPasswords[key];
 };

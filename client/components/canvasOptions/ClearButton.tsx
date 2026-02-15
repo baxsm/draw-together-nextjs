@@ -1,10 +1,11 @@
 "use client";
 
-import { FC, useCallback, useEffect, useState } from "react";
-import { Button } from "../ui/button";
-import { useCanvasStore } from "@/stores/canvasStore";
-import { socket } from "@/lib/socket";
+import { Trash2 } from "lucide-react";
 import { useParams } from "next/navigation";
+import { type FC, useCallback, useEffect, useState } from "react";
+import { socket } from "@/lib/socket";
+import { useCanvasStore } from "@/stores/canvasStore";
+import { Button } from "../ui/button";
 
 const ClearButton: FC = () => {
   const { roomId } = useParams();
@@ -48,7 +49,14 @@ const ClearButton: FC = () => {
   }, [clear]);
 
   return (
-    <Button disabled={isLoading} onClick={clearCanvas} variant="destructive" className="flex-1">
+    <Button
+      disabled={isLoading}
+      onClick={clearCanvas}
+      variant="destructive"
+      size="sm"
+      className="flex-1 cursor-pointer"
+    >
+      <Trash2 className="mr-1.5 h-3.5 w-3.5" />
       Clear
     </Button>
   );
