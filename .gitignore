@@ -1,6 +1,7 @@
 node_modules
 .claude
 TODO.md
+CLAUDE.md
 
 # Next.js
 .next/

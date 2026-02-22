@@ -178,25 +178,6 @@ describe("draw", () => {
 		expect(ctx.moveTo).not.toHaveBeenCalled();
 	});
 
-	it("draws text at currentPoint", () => {
-		const ctx = createMockCtx();
-		draw(baseOptions(ctx, { tool: "text", text: "Hello", fontSize: 24 }));
-		expect(ctx.fillText).toHaveBeenCalledWith("Hello", 100, 100);
-		expect(ctx.font).toBe("24px sans-serif");
-	});
-
-	it("uses default fontSize 16 when not specified", () => {
-		const ctx = createMockCtx();
-		draw(baseOptions(ctx, { tool: "text", text: "Hi" }));
-		expect(ctx.font).toBe("16px sans-serif");
-	});
-
-	it("does nothing for text tool without text", () => {
-		const ctx = createMockCtx();
-		draw(baseOptions(ctx, { tool: "text" }));
-		expect(ctx.fillText).not.toHaveBeenCalled();
-	});
-
 	it("uses freehand for laser tool", () => {
 		const ctx = createMockCtx();
 		draw(baseOptions(ctx, { tool: "laser" }));

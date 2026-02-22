@@ -15,9 +15,36 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Draw Together",
+  title: {
+    default: "Draw Together",
+    template: "%s | Draw Together",
+  },
   description:
     "Real-time collaborative drawing platform for sharing moments of creativity and fun.",
+  icons: {
+    icon: "/favicon.svg",
+  },
+  metadataBase: new URL("https://draw-together-nextjs.vercel.app"),
+  openGraph: {
+    title: "Draw Together",
+    description:
+      "Real-time collaborative drawing platform for sharing moments of creativity and fun.",
+    url: "https://draw-together-nextjs.vercel.app",
+    siteName: "Draw Together",
+    type: "website",
+    images: ["/thumbnail.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Draw Together",
+    description:
+      "Real-time collaborative drawing platform for sharing moments of creativity and fun.",
+    images: ["/thumbnail.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export const viewport: Viewport = {

@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://draw-together-nextjs.vercel.app/sitemap.xml

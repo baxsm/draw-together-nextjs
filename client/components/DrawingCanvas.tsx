@@ -14,7 +14,6 @@ import { useCursorsStore } from "@/stores/cursorStore";
 import { useMembersStore } from "@/stores/membersStore";
 import { useUserStore } from "@/stores/userStore";
 import CursorOverlay from "./CursorOverlay";
-import TextInput from "./TextInput";
 
 interface DrawingCanvasProps {
   roomId: string;
@@ -27,8 +26,6 @@ const DrawingCanvas: FC<DrawingCanvasProps> = ({ roomId }) => {
   const router = useRouter();
 
   const [isCanvasLoading, setIsCanvasLoading] = useState(true);
-  const [textInput, setTextInput] = useState<{ position: Point } | null>(null);
-
   const localContainerRef = useRef<HTMLDivElement>(null);
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -36,7 +33,6 @@ const DrawingCanvas: FC<DrawingCanvasProps> = ({ roomId }) => {
   const strokeColor = useCanvasStore((state) => state.strokeColor);
   const strokeWidth = useCanvasStore((state) => state.strokeWidth);
   const dashGap = useCanvasStore((state) => state.dashGap);
-  const fontSize = useCanvasStore((state) => state.fontSize);
   const isLocked = useCanvasStore((state) => state.isLocked);
   const setIsLocked = useCanvasStore((state) => state.setIsLocked);
   const user = useUserStore((state) => state.user);
@@ -85,7 +81,7 @@ const DrawingCanvas: FC<DrawingCanvasProps> = ({ roomId }) => {
 
   const onDraw = useCallback(
     ({ ctx, currentPoint, prevPoint }: DrawProps) => {
-      if (SHAPE_TOOLS.has(tool) || tool === "text") return;
+      if (SHAPE_TOOLS.has(tool)) return;
 
       if (tool === "laser") {
         if (prevPoint) {
@@ -117,15 +113,6 @@ const DrawingCanvas: FC<DrawingCanvasProps> = ({ roomId }) => {
       emitDraw(networkOptions);
     },
     [tool, strokeColor, strokeWidth, dashGap, emitDraw, addSegment],
-  );
-
-  const onDrawStart = useCallback(
-    (point: Point) => {
-      if (tool === "text") {
-        setTextInput({ position: point });
-      }
-    },
-    [tool],
   );
 
   const onDrawPreview = useCallback(
@@ -198,7 +185,6 @@ const DrawingCanvas: FC<DrawingCanvasProps> = ({ roomId }) => {
 
   const { canvasRef, onInteractStart } = useDraw({
     onDraw,
-    onDrawStart,
     onDrawEnd,
     onDrawPreview,
   });
@@ -387,7 +373,7 @@ const DrawingCanvas: FC<DrawingCanvasProps> = ({ roomId }) => {
 
     emitPresence("drawing");
 
-    if (tool !== "laser" && tool !== "text") {
+    if (tool !== "laser") {
       socket.emit("add-undo-point", {
         roomId,
         undoPoint: canvasElement.toDataURL(),
@@ -397,44 +383,8 @@ const DrawingCanvas: FC<DrawingCanvasProps> = ({ roomId }) => {
     onInteractStart(e);
   };
 
-  const handleTextSubmit = useCallback(
-    (text: string) => {
-      if (!textInput) return;
-
-      const ctx = canvasRef.current?.getContext("2d");
-      if (!ctx) return;
-
-      const canvasElement = canvasRef.current;
-      if (canvasElement) {
-        socket.emit("add-undo-point", {
-          roomId,
-          undoPoint: canvasElement.toDataURL(),
-        });
-      }
-
-      const drawOptions: DrawOptions = {
-        tool: "text",
-        ctx,
-        currentPoint: textInput.position,
-        prevPoint: undefined,
-        strokeColor,
-        strokeWidth,
-        dashGap,
-        text,
-        fontSize: fontSize[0],
-      };
-      draw(drawOptions);
-
-      const { ctx: _, ...networkOptions } = drawOptions;
-      emitDraw(networkOptions);
-    },
-    [textInput, strokeColor, strokeWidth, dashGap, fontSize, roomId, emitDraw],
-  );
-
   const cursorStyle =
-    tool === "text"
-      ? "text"
-      : tool === "eraser"
+    tool === "eraser"
         ? `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="black" stroke-width="1.5"/></svg>') 12 12, auto`
         : "crosshair";
 
@@ -467,15 +417,6 @@ const DrawingCanvas: FC<DrawingCanvasProps> = ({ roomId }) => {
         height={0}
         className="pointer-events-none absolute inset-0 h-full w-full"
       />
-      {textInput && tool === "text" && (
-        <TextInput
-          position={textInput.position}
-          strokeColor={strokeColor}
-          fontSize={fontSize[0]}
-          onSubmit={handleTextSubmit}
-          onCancel={() => setTextInput(null)}
-        />
-      )}
       <CursorOverlay />
       {canvasDisabled && (
         <div className="absolute top-4 left-1/2 z-30 flex -translate-x-1/2 items-center gap-1.5 rounded-lg border border-border/60 bg-background/80 px-3 py-1.5 shadow-lg backdrop-blur-sm">

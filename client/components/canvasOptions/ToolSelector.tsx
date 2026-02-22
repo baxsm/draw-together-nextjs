@@ -8,7 +8,6 @@ import {
   Pointer,
   Slash,
   Square,
-  Type,
 } from "lucide-react";
 import type { FC } from "react";
 import { cn } from "@/lib/utils";
@@ -21,7 +20,6 @@ const TOOLS: { tool: ToolType; icon: LucideIcon; label: string }[] = [
   { tool: "rectangle", icon: Square, label: "Rectangle" },
   { tool: "circle", icon: Circle, label: "Circle" },
   { tool: "line", icon: Slash, label: "Line" },
-  { tool: "text", icon: Type, label: "Text" },
   { tool: "laser", icon: Pointer, label: "Laser" },
 ];
 

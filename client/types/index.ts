@@ -25,7 +25,6 @@ type ToolType =
   | "rectangle"
   | "circle"
   | "line"
-  | "text"
   | "laser";
 
 interface Point {
@@ -46,8 +45,6 @@ interface DrawOptions extends DrawProps {
   dashGap: number[];
   startPoint?: Point;
   endPoint?: Point;
-  text?: string;
-  fontSize?: number;
   userId?: string;
 }
 

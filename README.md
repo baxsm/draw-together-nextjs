@@ -1,79 +1,104 @@
-# Draw Together 🎨✨
+# Draw Together
 
-Draw Together is a collaborative platform built with Next.js, fostering creativity and shared moments. Inspired by the project [Scribble](https://github.com/nainglinnkhant/scribble), Draw Together enhances the user experience with an improved UI, expanded color options, and a robust chat feature for seamless communication between users.
+Real-time collaborative drawing platform built with Next.js and Socket.io.
 
-![Draw-Together Thumbnail](/thumbnail.png)
+![Draw Together](/thumbnail.png)
 
-## Live Demo 🌐
+## Live Demo
 
-Explore the live demo of Draw Together at [here](https://draw-together-nextjs.vercel.app/) and start creating and connecting with others in real-time!
+[draw-together-nextjs.vercel.app](https://draw-together-nextjs.vercel.app/)
 
-## Technologies Used 🚀
+## Tech Stack
 
-### Backend
+### Client
 
-- **Express:** Fast, minimalist web framework for Node.js.
-- **Socket.io:** Real-time bidirectional event-based communication.
-- **Zod:** TypeScript-first schema declaration and validation library.
-- **TailwindCSS**: A utility-first CSS framework for a sleek and responsive design.
+- [Next.js](https://nextjs.org/) (React 19)
+- [Socket.io Client](https://socket.io/)
+- [Tailwind CSS v4](https://tailwindcss.com/)
+- [shadcn/ui](https://ui.shadcn.com/) + [Radix UI](https://www.radix-ui.com/)
+- [Zustand](https://zustand.docs.pmnd.rs/) (State Management)
+- [Framer Motion](https://www.framer.com/motion/) (Animations)
+- [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/) (Validation)
+- [Biome](https://biomejs.dev/) (Linting & Formatting)
+- [Vitest](https://vitest.dev/) + [Playwright](https://playwright.dev/) (Testing)
 
-### Frontend
+### Server
 
-- **Next.js:** React framework for building server-rendered applications.
-- **React:** JavaScript library for building user interfaces.
-- **Socket.io-client:** Client library for Socket.io.
-- **TailwindCSS**: A utility-first CSS framework for a sleek and responsive design.
-- **shadcn-ui**: Elevating the user interface with stylish components.
+- [Bun](https://bun.sh/) (Runtime)
+- [Socket.io](https://socket.io/)
+- [Zod](https://zod.dev/) (Validation)
+- [Biome](https://biomejs.dev/) (Linting & Formatting)
 
-## Features 🌟
+## Features
 
-- **Collaborative Drawing:** Engage in real-time collaborative drawing sessions with friends and family.
-- **Rich Color Options:** Explore an expanded palette of colors to bring your creations to life.
-- **Interactive Chat Box:** Seamlessly communicate with other users through a feature-rich chat box with sender names, timestamps, message grouping, system messages, and unread indicators.
-- **Download Canvas:** Save your masterpieces by downloading the canvas.
-- **Theme Customization:** Personalize your experience with theme customization options.
-- **Sleek UI Design:** Elevate the user interface with stylish components from the shadcn-ui library.
+- **Collaborative Drawing** — Real-time multi-user drawing with live cursor tracking
+- **Drawing Tools** — Pencil, line, rectangle, circle with configurable stroke width and color
+- **Rich Color Picker** — Full color palette with custom color selection
+- **Chat System** — Real-time messaging with sender names, timestamps, message grouping, emojis, typing indicators, and unread badges
+- **System Messages** — Join/leave events displayed inline in chat
+- **User Presence** — Active drawing vs idle status indicators
+- **User Roles** — Admin/viewer permissions with kick, lock canvas, and promote controls
+- **Password-Protected Rooms** — Optional password requirement for room access
+- **Room Invite Links** — Shareable links that auto-fill room ID on join
+- **Drawing Attribution** — Visual indication of which user drew each stroke
+- **Canvas Controls** — Undo, clear, and download canvas as image
+- **Theme** — Dark mode UI
 
-## Getting Started 🛠️
+## Getting Started
 
-Certainly! You can modify the instructions as follows:
+### Prerequisites
 
-1. **Clone the repository:**
+- [Node.js](https://nodejs.org/) (v18+)
+- [Bun](https://bun.sh/)
+
+### Setup
+
+1. Clone the repository:
 
    ```bash
    git clone https://github.com/baxsm/draw-together-nextjs.git
-   ```
-
-2. **Navigate to the project directory:**
-
-   ```bash
    cd draw-together-nextjs
    ```
 
-3. **Install server dependencies:**
+2. Install dependencies:
 
    ```bash
-   npm run install-server
+   # Client
+   cd client
+   npm install
+
+   # Server
+   cd ../server
+   bun install
    ```
 
-4. **Install client dependencies:**
+3. Start development servers:
 
    ```bash
-   npm run install-client
-   ```
+   # Server (from /server)
+   bun dev
 
-5. **Run the development server:**
-
-   ```bash
+   # Client (from /client)
    npm run dev
    ```
 
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
+4. Open [http://localhost:3000](http://localhost:3000)
 
-## Future Work 🚀
+### Testing
 
-See [TODO.md](TODO.md) for planned enhancements and features.
+```bash
+# Client unit tests
+cd client
+npm test
 
-## Contributing
+# Client E2E tests
+npm run test:e2e
 
-Feel free to contribute or suggest new ideas for the future of Draw Together! 🚀
+# Server tests
+cd server
+bun test
+```
+
+## License
+
+MIT

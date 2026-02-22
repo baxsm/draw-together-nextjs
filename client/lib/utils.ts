@@ -87,17 +87,6 @@ function drawLine(options: DrawOptions) {
   ctx.stroke();
 }
 
-function drawText(options: DrawOptions) {
-  const { ctx, currentPoint, strokeColor, text, fontSize } = options;
-  if (!text) return;
-
-  const size = fontSize ?? 16;
-  ctx.font = `${size}px sans-serif`;
-  ctx.fillStyle = strokeColor;
-  ctx.textBaseline = "top";
-  ctx.fillText(text, currentPoint.x, currentPoint.y);
-}
-
 export function draw(options: DrawOptions) {
   const { ctx, userId } = options;
 
@@ -118,9 +107,6 @@ export function draw(options: DrawOptions) {
       break;
     case "line":
       drawLine(options);
-      break;
-    case "text":
-      drawText(options);
       break;
     case "laser":
       drawFreehand(options);
